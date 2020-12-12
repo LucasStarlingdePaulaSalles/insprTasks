@@ -24,17 +24,19 @@ type Task struct {
 	UpdatedAt    time.Time     `gorm:"default:CURRENT_TIMESTAMP" json:"updatedAt"`
 }
 
-// Prepare is a default constructor like function
+// Prepare is a default constructor like function that assigns default values for business and DB compatibility reasons
 func (task *Task) Prepare() {
 	task.ID = 0
 	task.Title = html.EscapeString(strings.TrimSpace(task.Title))
 	task.Description = html.EscapeString(strings.TrimSpace(task.Description))
 	task.Status = 0
 	task.WorkedFor = 0
+	task.WorkedFrom = time.Now()
 	task.CreatedAt = time.Now()
 	task.UpdatedAt = time.Now()
 }
 
+//Validate is a Validator intended to inforce business rules on creating or updating Tasks
 func (task *Task) Validate() error {
 
 	if task.Title == "" {
@@ -52,6 +54,7 @@ func (task *Task) Validate() error {
 	return nil
 }
 
+//SaveTask is responsible for storing a task on the DB
 func (task *Task) SaveTask(db *gorm.DB) (*Task, error) {
 
 	var err error
@@ -62,6 +65,7 @@ func (task *Task) SaveTask(db *gorm.DB) (*Task, error) {
 	return task, nil
 }
 
+//FindAllTasks queries the DB to select al availible Tasks
 func (task *Task) FindAllTasks(db *gorm.DB) (*[]Task, error) {
 	var err error
 	tasks := []Task{}
