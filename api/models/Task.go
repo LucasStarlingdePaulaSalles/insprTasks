@@ -52,7 +52,7 @@ func (task *Task) Validate() error {
 	return nil
 }
 
-func (task *Task) SaveUser(db *gorm.DB) (*Task, error) {
+func (task *Task) SaveTask(db *gorm.DB) (*Task, error) {
 
 	var err error
 	err = db.Debug().Create(&task).Error
