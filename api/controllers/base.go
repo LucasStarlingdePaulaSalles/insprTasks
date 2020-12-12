@@ -10,7 +10,7 @@ import (
 
 	_ "github.com/jinzhu/gorm/dialects/mysql"    //mysql database driver
 
-	// "github.com/LucasStarlingdePaulaSalles/insprTasks/api/models"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/api/models"
 )
 
 type Server struct {
@@ -32,7 +32,7 @@ func (server *Server) Initialize(Dbdriver, DbUser, DbPassword, DbPort, DbHost, D
 	}
 
 
-	// server.DB.Debug().AutoMigrate(&models.MyModel{}) //database migration
+	server.DB.Debug().AutoMigrate(&models.Task{}) //database migration
 
 	server.Router = mux.NewRouter()
 
