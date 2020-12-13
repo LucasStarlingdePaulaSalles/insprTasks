@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/LucasStarlingdePaulaSalles/insprTasks/api/models"
 	"github.com/LucasStarlingdePaulaSalles/insprTasks/api/responses"
 )
@@ -57,4 +59,30 @@ func (server *Server) GetTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responses.JSON(w, http.StatusOK, tasks)
+}
+
+func (server *Server) WorkOnATask(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	taskID, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	task := models.Task{}
+	updatedTask, err := task.WorkOnTask(server.DB, uint32(taskID))
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, updatedTask)
+}
+
+func (server *Server) StopWork(w http.ResponseWriter, r *http.Request){
+	task := models.Task{}
+	stopedTask, err := task.StopWorkOnTasks(server.DB)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	responses.JSON(w,http.StatusOK, stopedTask)
 }

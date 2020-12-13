@@ -24,13 +24,14 @@ type Task struct {
 	UpdatedAt    time.Time     `gorm:"default:CURRENT_TIMESTAMP" json:"updatedAt"`
 }
 
+var NoCurrentWorkError = errors.New("No task been worked on")
 // Prepare is a default constructor like function that assigns default values for business and DB compatibility reasons
 func (task *Task) Prepare() {
 	task.ID = 0
 	task.Title = html.EscapeString(strings.TrimSpace(task.Title))
 	task.Description = html.EscapeString(strings.TrimSpace(task.Description))
 	task.Status = 0
-	task.WorkedFor = 0
+	task.WorkedFor = 0 * time.Nanosecond
 	task.WorkedFrom = time.Now()
 	task.CreatedAt = time.Now()
 	task.UpdatedAt = time.Now()
@@ -74,4 +75,57 @@ func (task *Task) FindAllTasks(db *gorm.DB) (*[]Task, error) {
 		return &[]Task{}, err
 	}
 	return &tasks, err
+}
+
+//WorkOnTask iniciates time counting for a specified task.
+func (task *Task) WorkOnTask(db *gorm.DB, taskID uint32) (*Task, error){
+
+	var err error
+	err = db.Debug().Model(Task{}).Where("id = ?",taskID).Take(&task).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			err = errors.New("Incorrect task id")
+		}
+		return &Task{}, err
+	}
+	if task.Status == 1 {
+		return &Task{}, errors.New("Task already in progress")
+	}
+	_,err = task.StopWorkOnTasks(db)
+	if err != nil && err.Error() != "No task been worked on" {
+		return &Task{}, err
+	}
+	err = nil
+	db.Debug().Model(Task{}).Where("id = ?",taskID).UpdateColumns(
+		map[string]interface{}{
+			"status": 1,
+			"updatedAt": time.Now(),
+			"workedFrom": time.Now(),
+			}).Take(&task)
+	return task, err
+}
+
+//StopWorkOnTasks interrupts work on the current task
+func (task *Task) StopWorkOnTasks(db *gorm.DB) (*Task, error){
+	var err error
+	var t = Task{}
+	err = db.Debug().Model(&Task{}).Where("status = ?", 1).Take(&t).Error
+	if err != nil {
+		return &Task{}, errors.New("No task been worked on")
+	}
+
+	timeWorked := t.WorkedFor + time.Since(t.WorkedFrom)
+
+	err = db.Debug().Model(Task{}).Where("status = ?", 1).UpdateColumns(
+		map[string]interface{}{
+			"status": 0,
+			"workedFor": timeWorked,
+			"updatedAt": time.Now(),
+		}).Error
+
+	if err != nil {
+		return &Task{}, err
+	}
+	db.Debug().Model(Task{}).Take(&t)
+	return &t, nil
 }
