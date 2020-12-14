@@ -14,4 +14,5 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/stop", middlewares.SetMiddlewareJSON(s.StopWork)).Methods("PATCH")
 	s.Router.HandleFunc("/status/{id}", middlewares.SetMiddlewareJSON(s.ChangeStatus)).Methods("PATCH")
 	s.Router.HandleFunc("/tasks/date", middlewares.SetMiddlewareJSON(s.GetTasksByDate)).Methods("GET")
+	s.Router.HandleFunc("/tasks/value", middlewares.SetMiddlewareJSON(s.GetTasksByValue)).Methods("GET")
 }

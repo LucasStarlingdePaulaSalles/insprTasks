@@ -144,3 +144,24 @@ func (server *Server) GetTasksByDate(w http.ResponseWriter, r *http.Request) {
 	}
 	responses.JSON(w, http.StatusOK, tasks)
 }
+
+//GetTasksByValue is a handler function for getting tasks, filtered by a numeric value
+func (server *Server) GetTasksByValue(w http.ResponseWriter, r *http.Request) {
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+	}
+
+	var filter models.NumericFilterDTI
+	err = json.Unmarshal(body,&filter)
+
+	task := models.Task{}
+	tasks, err := task.FindByValue(server.DB,filter)
+
+	if err != nil {
+		responses.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	responses.JSON(w, http.StatusOK, tasks)
+}

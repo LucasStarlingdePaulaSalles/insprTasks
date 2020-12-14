@@ -15,7 +15,7 @@ type Task struct {
 	ID           uint64        `gorm:"primary_key;auto_increment" json:"id"`
 	Title        string        `gorm:"size:255;not null;unique" json:"title"`
 	Description  string        `gorm:"size:255;not null;" json:"description"`
-	Priority     uint16        `gorm:"not null" json:"priority"`
+	Priority     uint8         `gorm:"not null" json:"priority"`
 	Status       uint8         `gorm:"not null" json:"status"`
 	Deadline     time.Time     `gorm:"not null" json:"deadline"`
 	TimeEstimate time.Duration `gorm:"not null" json:"timeEstimate"`
@@ -216,6 +216,32 @@ func (task *Task) FindByDate(db *gorm.DB, filter DateFilterDTI) (*[]Task, error)
 	response := []Task{}
 	for i := range tasks {
 		if dateCompare(tasks[i], filter) {
+			response = append(response, tasks[i])
+		}
+	}
+	return &response, err
+}
+
+func valueCompare(task Task, filter NumericFilterDTI) bool {
+	var value uint8
+	switch filter.Field {
+	default:
+		value = task.Priority
+	}
+	return value == filter.Value
+}
+
+//FindByNumber return all tasks that match the given DateFilter
+func (task *Task) FindByValue(db *gorm.DB, filter NumericFilterDTI) (*[]Task, error) {
+	var err error
+	tasks := []Task{}
+	err = db.Debug().Model(&Task{}).Find(&tasks).Error
+	if err != nil {
+		return &[]Task{}, err
+	}
+	response := []Task{}
+	for i := range tasks {
+		if valueCompare(tasks[i], filter) {
 			response = append(response, tasks[i])
 		}
 	}
