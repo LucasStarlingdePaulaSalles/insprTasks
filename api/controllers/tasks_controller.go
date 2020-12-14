@@ -61,6 +61,7 @@ func (server *Server) GetTasks(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, tasks)
 }
 
+//WorkOnATask is a handler function for changing a task's status, specifically to 'Working' status
 func (server *Server) WorkOnATask(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	taskID, err := strconv.ParseUint(vars["id"], 10, 32)
@@ -77,6 +78,7 @@ func (server *Server) WorkOnATask(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, updatedTask)
 }
 
+//StopWork is a handler function for stopping current work
 func (server *Server) StopWork(w http.ResponseWriter, r *http.Request){
 	task := models.Task{}
 	stopedTask, err := task.StopWorkOnTasks(server.DB)
@@ -87,10 +89,7 @@ func (server *Server) StopWork(w http.ResponseWriter, r *http.Request){
 	responses.JSON(w,http.StatusOK, stopedTask)
 }
 
-type NewStatusDTI struct{
-	NewStatus uint8 `json:newStatus`
-}
-
+//ChangeStatus is a handler function for changing a task's status
 func (server *Server) ChangeStatus(w http.ResponseWriter, r *http.Request){
 	vars := mux.Vars(r)
 	taskID, err := strconv.ParseUint(vars["id"], 10, 32)
@@ -104,7 +103,7 @@ func (server *Server) ChangeStatus(w http.ResponseWriter, r *http.Request){
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 	}
 
-	var input NewStatusDTI
+	var input models.NewStatusDTI
 	err = json.Unmarshal(body,&input)
 
 	task := models.Task{}
@@ -133,7 +132,7 @@ func (server *Server) GetTasksByDate(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
 	}
 
-	var filter models.DateFilter
+	var filter models.DateFilterDTI
 	err = json.Unmarshal(body,&filter)
 
 	task := models.Task{}

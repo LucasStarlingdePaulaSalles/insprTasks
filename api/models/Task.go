@@ -1,12 +1,11 @@
 package models
 
 import (
-	// "fmt"
 	"errors"
 	"html"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
 
 	"github.com/jinzhu/gorm"
 )
@@ -14,7 +13,7 @@ import (
 // Task is the applications's main class, the object that represenst a user task.
 type Task struct {
 	ID           uint64        `gorm:"primary_key;auto_increment" json:"id"`
-	Title     	 string        `gorm:"size:255;not null;unique" json:"title"`
+	Title        string        `gorm:"size:255;not null;unique" json:"title"`
 	Description  string        `gorm:"size:255;not null;" json:"description"`
 	Priority     uint16        `gorm:"not null" json:"priority"`
 	Status       uint8         `gorm:"not null" json:"status"`
@@ -26,7 +25,6 @@ type Task struct {
 	CreatedAt    time.Time     `gorm:"default:CURRENT_TIMESTAMP" json:"createdAt"`
 	UpdatedAt    time.Time     `gorm:"default:CURRENT_TIMESTAMP" json:"updatedAt"`
 }
-
 
 // Prepare is a default constructor like function that assigns default values for business and DB compatibility reasons
 func (task *Task) Prepare() {
@@ -82,10 +80,10 @@ func (task *Task) FindAllTasks(db *gorm.DB) (*[]Task, error) {
 }
 
 //WorkOnTask iniciates time counting for a specified task.
-func (task *Task) WorkOnTask(db *gorm.DB, taskID uint64) (*Task, error){
+func (task *Task) WorkOnTask(db *gorm.DB, taskID uint64) (*Task, error) {
 
 	var err error
-	err = db.Debug().Model(&Task{}).Where("id = ?",taskID).Take(&task).Error
+	err = db.Debug().Model(&Task{}).Where("id = ?", taskID).Take(&task).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			err = errors.New("Incorrect task id")
@@ -97,31 +95,31 @@ func (task *Task) WorkOnTask(db *gorm.DB, taskID uint64) (*Task, error){
 	}
 
 	err = task.verifyDependencies(db)
-	if err != nil{
+	if err != nil {
 		return &Task{}, err
 	}
 
-	_,err = task.StopWorkOnTasks(db)
+	_, err = task.StopWorkOnTasks(db)
 	if err != nil && err.Error() != "No task been worked on" {
 		return &Task{}, err
 	}
-	
+
 	err = nil
 	db.Debug().Model(&Task{}).UpdateColumns(
 		map[string]interface{}{
-			"status": 1,
-			"updatedAt": time.Now(),
+			"status":     1,
+			"updatedAt":  time.Now(),
 			"workedFrom": time.Now(),
-			}).Take(&task)
+		}).Take(&task)
 	return task, err
 }
 
-func (task *Task) verifyDependencies(db *gorm.DB) error{
+func (task *Task) verifyDependencies(db *gorm.DB) error {
 	dependencies := strings.Split(task.Dependencies, ";")
 	var blockers []string
-	for _,s := range dependencies {
-		dependID, err := strconv.ParseInt(s,10, 64)
-		if  err != nil {
+	for _, s := range dependencies {
+		dependID, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
 			return errors.New("Invalid dependencie Id")
 		}
 		err = db.Debug().Model(&Task{}).Where("id = ?", dependID).Where("status = ?", Done).Take(&Task{}).Error
@@ -132,9 +130,9 @@ func (task *Task) verifyDependencies(db *gorm.DB) error{
 	}
 	if len(blockers) > 0 {
 		msg := "Task blocked. Blockers (by ID): "
-		msg  = msg + blockers[0]
-		for _, s := range blockers[1:]{
-			msg = msg + ", " + s 
+		msg = msg + blockers[0]
+		for _, s := range blockers[1:] {
+			msg = msg + ", " + s
 		}
 		return errors.New(msg)
 	}
@@ -142,7 +140,7 @@ func (task *Task) verifyDependencies(db *gorm.DB) error{
 }
 
 //StopWorkOnTasks interrupts work on the current task
-func (task *Task) StopWorkOnTasks(db *gorm.DB) (*Task, error){
+func (task *Task) StopWorkOnTasks(db *gorm.DB) (*Task, error) {
 	var err error
 	var t = Task{}
 	err = db.Debug().Model(&Task{}).Where("status = ?", 1).Take(&t).Error
@@ -154,7 +152,7 @@ func (task *Task) StopWorkOnTasks(db *gorm.DB) (*Task, error){
 
 	err = db.Debug().Model(&Task{}).Where("status = ?", 1).UpdateColumns(
 		map[string]interface{}{
-			"status": 0,
+			"status":    0,
 			"workedFor": timeWorked,
 			"updatedAt": time.Now(),
 		}).Error
@@ -167,7 +165,7 @@ func (task *Task) StopWorkOnTasks(db *gorm.DB) (*Task, error){
 }
 
 //ChangeTaskStatus is a update function specifically for changin a task's status
-func (task *Task) ChangeTaskStatus(db *gorm.DB, taskID uint64, newStatus uint8 ) (*Task, error){
+func (task *Task) ChangeTaskStatus(db *gorm.DB, taskID uint64, newStatus uint8) (*Task, error) {
 	var err error
 	err = db.Debug().Model(&Task{}).Where("id = ?", taskID).Take(&task).Error
 	if err != nil {
@@ -185,7 +183,7 @@ func (task *Task) ChangeTaskStatus(db *gorm.DB, taskID uint64, newStatus uint8 )
 		return &Task{}, errors.New("Task closed")
 	}
 
-	err = db.Debug().Model(&Task{}).UpdateColumn("status",newStatus).Take(&task).Error
+	err = db.Debug().Model(&Task{}).UpdateColumn("status", newStatus).Take(&task).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			err = errors.New("Incorrect task id")
@@ -196,19 +194,19 @@ func (task *Task) ChangeTaskStatus(db *gorm.DB, taskID uint64, newStatus uint8 )
 	return task, err
 }
 
-func dateCompare(task Task, filter DateFilter) bool {
+func dateCompare(task Task, filter DateFilterDTI) bool {
 	var date time.Time
 	switch filter.Field {
 	case "deadline":
 		date = task.Deadline
 	default:
-		date = task.CreatedAt		
+		date = task.CreatedAt
 	}
 	return date.Year() == filter.Year && int(date.Month()) == filter.Month && date.Day() == filter.Day
 }
 
 //FindByDate return all tasks that match the given DateFilter
-func (task *Task)FindByDate(db *gorm.DB, filter DateFilter) (*[]Task, error) {
+func (task *Task) FindByDate(db *gorm.DB, filter DateFilterDTI) (*[]Task, error) {
 	var err error
 	tasks := []Task{}
 	err = db.Debug().Model(&Task{}).Find(&tasks).Error
@@ -216,8 +214,8 @@ func (task *Task)FindByDate(db *gorm.DB, filter DateFilter) (*[]Task, error) {
 		return &[]Task{}, err
 	}
 	response := []Task{}
-	for i := range tasks{
-		if dateCompare(tasks[i], filter){
+	for i := range tasks {
+		if dateCompare(tasks[i], filter) {
 			response = append(response, tasks[i])
 		}
 	}
