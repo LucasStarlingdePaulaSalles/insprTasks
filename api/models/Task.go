@@ -195,3 +195,31 @@ func (task *Task) ChangeTaskStatus(db *gorm.DB, taskID uint64, newStatus uint8 )
 
 	return task, err
 }
+
+func dateCompare(task Task, filter DateFilter) bool {
+	var date time.Time
+	switch filter.Field {
+	case "deadline":
+		date = task.Deadline
+	default:
+		date = task.CreatedAt		
+	}
+	return date.Year() == filter.Year && int(date.Month()) == filter.Month && date.Day() == filter.Day
+}
+
+//FindByDate return all tasks that match the given DateFilter
+func (task *Task)FindByDate(db *gorm.DB, filter DateFilter) (*[]Task, error) {
+	var err error
+	tasks := []Task{}
+	err = db.Debug().Model(&Task{}).Find(&tasks).Error
+	if err != nil {
+		return &[]Task{}, err
+	}
+	response := []Task{}
+	for i := range tasks{
+		if dateCompare(tasks[i], filter){
+			response = append(response, tasks[i])
+		}
+	}
+	return &response, err
+}
