@@ -31,7 +31,7 @@ func (task *Task) Prepare() {
 	task.ID = 0
 	task.Title = html.EscapeString(strings.TrimSpace(task.Title))
 	task.Description = html.EscapeString(strings.TrimSpace(task.Description))
-	task.Status = 0
+	task.Status = ToDo
 	task.Dependencies = html.EscapeString(strings.TrimSpace(task.Dependencies))
 	task.WorkedFor = 0 * time.Nanosecond
 	task.WorkedFrom = time.Now()
@@ -107,7 +107,7 @@ func (task *Task) WorkOnTask(db *gorm.DB, taskID uint64) (*Task, error) {
 	err = nil
 	db.Debug().Model(&Task{}).UpdateColumns(
 		map[string]interface{}{
-			"status":     1,
+			"status":     Working,
 			"updatedAt":  time.Now(),
 			"workedFrom": time.Now(),
 		}).Take(&task)
@@ -143,16 +143,16 @@ func (task *Task) verifyDependencies(db *gorm.DB) error {
 func (task *Task) StopWorkOnTasks(db *gorm.DB) (*Task, error) {
 	var err error
 	var t = Task{}
-	err = db.Debug().Model(&Task{}).Where("status = ?", 1).Take(&t).Error
+	err = db.Debug().Model(&Task{}).Where("status = ?", Working).Take(&t).Error
 	if err != nil {
 		return &Task{}, errors.New("No task been worked on")
 	}
 
 	timeWorked := t.WorkedFor + time.Since(t.WorkedFrom)
 
-	err = db.Debug().Model(&Task{}).Where("status = ?", 1).UpdateColumns(
+	err = db.Debug().Model(&Task{}).Where("status = ?", Working).UpdateColumns(
 		map[string]interface{}{
-			"status":    0,
+			"status":    ToDo,
 			"workedFor": timeWorked,
 			"updatedAt": time.Now(),
 		}).Error
@@ -175,11 +175,11 @@ func (task *Task) ChangeTaskStatus(db *gorm.DB, taskID uint64, newStatus uint8) 
 		return &Task{}, err
 	}
 
-	if task.Status == 1 {
+	if task.Status == Working {
 		return task.StopWorkOnTasks(db)
 	}
 
-	if task.Status == 3 {
+	if task.Status == Closed {
 		return &Task{}, errors.New("Task closed")
 	}
 
