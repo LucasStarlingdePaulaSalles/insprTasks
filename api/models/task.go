@@ -231,7 +231,7 @@ func valueCompare(task Task, filter NumericFilterDTI) bool {
 	return value == filter.Value
 }
 
-//FindByNumber return all tasks that match the given DateFilter
+//FindByValue return all tasks that match the given DateFilter
 func (task *Task) FindByValue(db *gorm.DB, filter NumericFilterDTI) (*[]Task, error) {
 	var err error
 	tasks := []Task{}
