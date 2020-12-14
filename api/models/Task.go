@@ -1,10 +1,12 @@
 package models
 
 import (
+	// "fmt"
 	"errors"
 	"html"
 	"strings"
 	"time"
+	"strconv"
 
 	"github.com/jinzhu/gorm"
 )
@@ -18,6 +20,7 @@ type Task struct {
 	Status       uint8         `gorm:"not null" json:"status"`
 	Deadline     time.Time     `gorm:"not null" json:"deadline"`
 	TimeEstimate time.Duration `gorm:"not null" json:"timeEstimate"`
+	Dependencies string        `gorm:"size:255;" json:"dependencies"`
 	WorkedFrom   time.Time     `json:"workedFrom"`
 	WorkedFor    time.Duration `json:"workedFor"`
 	CreatedAt    time.Time     `gorm:"default:CURRENT_TIMESTAMP" json:"createdAt"`
@@ -31,6 +34,7 @@ func (task *Task) Prepare() {
 	task.Title = html.EscapeString(strings.TrimSpace(task.Title))
 	task.Description = html.EscapeString(strings.TrimSpace(task.Description))
 	task.Status = 0
+	task.Dependencies = html.EscapeString(strings.TrimSpace(task.Dependencies))
 	task.WorkedFor = 0 * time.Nanosecond
 	task.WorkedFrom = time.Now()
 	task.CreatedAt = time.Now()
@@ -88,13 +92,20 @@ func (task *Task) WorkOnTask(db *gorm.DB, taskID uint64) (*Task, error){
 		}
 		return &Task{}, err
 	}
-	if task.Status == 1 {
+	if task.Status == Working {
 		return &Task{}, errors.New("Task already in progress")
 	}
+
+	err = task.verifyDependencies(db)
+	if err != nil{
+		return &Task{}, err
+	}
+
 	_,err = task.StopWorkOnTasks(db)
 	if err != nil && err.Error() != "No task been worked on" {
 		return &Task{}, err
 	}
+	
 	err = nil
 	db.Debug().Model(&Task{}).UpdateColumns(
 		map[string]interface{}{
@@ -103,6 +114,31 @@ func (task *Task) WorkOnTask(db *gorm.DB, taskID uint64) (*Task, error){
 			"workedFrom": time.Now(),
 			}).Take(&task)
 	return task, err
+}
+
+func (task *Task) verifyDependencies(db *gorm.DB) error{
+	dependencies := strings.Split(task.Dependencies, ";")
+	var blockers []string
+	for _,s := range dependencies {
+		dependID, err := strconv.ParseInt(s,10, 64)
+		if  err != nil {
+			return errors.New("Invalid dependencie Id")
+		}
+		err = db.Debug().Model(&Task{}).Where("id = ?", dependID).Where("status = ?", Done).Take(&Task{}).Error
+
+		if err != nil {
+			blockers = append(blockers, s)
+		}
+	}
+	if len(blockers) > 0 {
+		msg := "Task blocked. Blockers (by ID): "
+		msg  = msg + blockers[0]
+		for _, s := range blockers[1:]{
+			msg = msg + ", " + s 
+		}
+		return errors.New(msg)
+	}
+	return nil
 }
 
 //StopWorkOnTasks interrupts work on the current task
