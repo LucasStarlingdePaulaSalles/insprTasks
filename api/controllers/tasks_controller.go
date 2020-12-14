@@ -69,7 +69,7 @@ func (server *Server) WorkOnATask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	task := models.Task{}
-	updatedTask, err := task.WorkOnTask(server.DB, uint32(taskID))
+	updatedTask, err := task.WorkOnTask(server.DB, uint64(taskID))
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -85,4 +85,42 @@ func (server *Server) StopWork(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	responses.JSON(w,http.StatusOK, stopedTask)
+}
+
+type NewStatusDTI struct{
+	NewStatus uint8 `json:newStatus`
+}
+
+func (server *Server) ChangeStatus(w http.ResponseWriter, r *http.Request){
+	vars := mux.Vars(r)
+	taskID, err := strconv.ParseUint(vars["id"], 10, 32)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusUnprocessableEntity, err)
+	}
+
+	var input NewStatusDTI
+	err = json.Unmarshal(body,&input)
+
+	task := models.Task{}
+	updatedTask := &models.Task{}
+	if input.NewStatus == 1 {
+		updatedTask, err = task.WorkOnTask(server.DB, uint64(taskID))
+		if err != nil {
+			responses.ERROR(w, http.StatusInternalServerError, err)
+			return
+		}
+	} else{
+		updatedTask, err = task.ChangeTaskStatus(server.DB, uint64(taskID), input.NewStatus)
+		if err != nil {
+			responses.ERROR(w, http.StatusInternalServerError, err)
+			return
+		}
+	}
+	responses.JSON(w, http.StatusOK, updatedTask)
 }

@@ -24,7 +24,7 @@ type Task struct {
 	UpdatedAt    time.Time     `gorm:"default:CURRENT_TIMESTAMP" json:"updatedAt"`
 }
 
-var NoCurrentWorkError = errors.New("No task been worked on")
+
 // Prepare is a default constructor like function that assigns default values for business and DB compatibility reasons
 func (task *Task) Prepare() {
 	task.ID = 0
@@ -78,10 +78,10 @@ func (task *Task) FindAllTasks(db *gorm.DB) (*[]Task, error) {
 }
 
 //WorkOnTask iniciates time counting for a specified task.
-func (task *Task) WorkOnTask(db *gorm.DB, taskID uint32) (*Task, error){
+func (task *Task) WorkOnTask(db *gorm.DB, taskID uint64) (*Task, error){
 
 	var err error
-	err = db.Debug().Model(Task{}).Where("id = ?",taskID).Take(&task).Error
+	err = db.Debug().Model(&Task{}).Where("id = ?",taskID).Take(&task).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			err = errors.New("Incorrect task id")
@@ -96,7 +96,7 @@ func (task *Task) WorkOnTask(db *gorm.DB, taskID uint32) (*Task, error){
 		return &Task{}, err
 	}
 	err = nil
-	db.Debug().Model(Task{}).Where("id = ?",taskID).UpdateColumns(
+	db.Debug().Model(&Task{}).UpdateColumns(
 		map[string]interface{}{
 			"status": 1,
 			"updatedAt": time.Now(),
@@ -116,7 +116,7 @@ func (task *Task) StopWorkOnTasks(db *gorm.DB) (*Task, error){
 
 	timeWorked := t.WorkedFor + time.Since(t.WorkedFrom)
 
-	err = db.Debug().Model(Task{}).Where("status = ?", 1).UpdateColumns(
+	err = db.Debug().Model(&Task{}).Where("status = ?", 1).UpdateColumns(
 		map[string]interface{}{
 			"status": 0,
 			"workedFor": timeWorked,
@@ -126,6 +126,36 @@ func (task *Task) StopWorkOnTasks(db *gorm.DB) (*Task, error){
 	if err != nil {
 		return &Task{}, err
 	}
-	db.Debug().Model(Task{}).Take(&t)
+	db.Debug().Model(&Task{}).Take(&t)
 	return &t, nil
+}
+
+//ChangeTaskStatus is a update function specifically for changin a task's status
+func (task *Task) ChangeTaskStatus(db *gorm.DB, taskID uint64, newStatus uint8 ) (*Task, error){
+	var err error
+	err = db.Debug().Model(&Task{}).Where("id = ?", taskID).Take(&task).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			err = errors.New("Incorrect task id")
+		}
+		return &Task{}, err
+	}
+
+	if task.Status == 1 {
+		return task.StopWorkOnTasks(db)
+	}
+
+	if task.Status == 3 {
+		return &Task{}, errors.New("Task closed")
+	}
+
+	err = db.Debug().Model(&Task{}).UpdateColumn("status",newStatus).Take(&task).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			err = errors.New("Incorrect task id")
+		}
+		return &Task{}, err
+	}
+
+	return task, err
 }
