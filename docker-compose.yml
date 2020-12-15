@@ -1,0 +1,55 @@
+version: '3'
+services:
+  app:
+    container_name: inspr-tasks-app
+    build: .
+    ports: 
+      - 8080:8080 
+    restart: on-failure
+    volumes:
+      - api:/usr/src/app/
+    depends_on:
+      - inspr-tasks-mysql          
+    networks:
+      - inspr-tasks
+
+
+  inspr-tasks-mysql:
+    image: mysql:5.7
+    container_name: inspr-tasks-db-mysql
+    ports: 
+      - 3307:3306
+    environment:
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - database_mysql:/var/lib/mysql
+    networks:
+      - inspr-tasks
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-container
+    depends_on:
+      - inspr-tasks-mysql
+    environment:
+      - PMA_HOST=${DB_HOST}
+      - PMA_USER=${DB_USER}
+      - PMA_PORT=${DB_PORT}
+      - PMA_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 9090:80
+    restart: always
+    networks:
+      - inspr-tasks
+
+
+volumes:
+  api:
+  database_mysql:                  
+
+networks:
+  inspr-tasks:
+    driver: bridge
