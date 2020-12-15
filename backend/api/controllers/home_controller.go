@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/api/responses"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/backend/api/responses"
 )
 
 // Home is a basic endpoint for testing api's connection

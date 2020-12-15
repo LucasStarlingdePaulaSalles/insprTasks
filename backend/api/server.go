@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/api/controllers"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/backend/api/controllers"
 )
 
 var server = controllers.Server{}

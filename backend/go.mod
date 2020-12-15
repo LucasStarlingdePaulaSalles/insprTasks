@@ -1,4 +1,4 @@
-module github.com/LucasStarlingdePaulaSalles/insprTasks
+module github.com/LucasStarlingdePaulaSalles/insprTasks/backend
 
 go 1.15
 

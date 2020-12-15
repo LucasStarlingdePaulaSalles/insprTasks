@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/api/models"
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/api/responses"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/backend/api/models"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/backend/api/responses"
 )
 
 // CreateTask is a handler function for creating new tasks
