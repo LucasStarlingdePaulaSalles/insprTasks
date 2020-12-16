@@ -19,6 +19,7 @@ func Help() {
 	fmt.Println("stop     |   Stop work on currently active task")
 	fmt.Println("status   |               Change a task's status")
 	fmt.Println("close   |                          Close a task")
+	fmt.Println("tasks   |        Show tasks that match a filter")
 	fmt.Println()
 }
 
@@ -46,8 +47,11 @@ while:
 			ChangeStatus()
 		case "close":
 			CloseTask()
+		case "tasks":
+			GetFilteredTasks()
 		case "exit":
 			break while
+
 		}
 	}
 
