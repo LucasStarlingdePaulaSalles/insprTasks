@@ -228,10 +228,14 @@ func (task *Task) FindByDate(db *gorm.DB, filter DateFilterDTI) (*[]Task, error)
 }
 
 func valueCompare(task Task, filter NumericFilterDTI) bool {
-	var value uint8
+	var value int
 	switch filter.Field {
+	case "status":
+		value = int(task.Status)
+	case "ID":
+		value = int(task.ID)
 	default:
-		value = task.Priority
+		value = int(task.Priority)
 	}
 	return value == filter.Value
 }

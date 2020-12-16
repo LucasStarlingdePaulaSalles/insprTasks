@@ -3,5 +3,5 @@ package models
 //NumericFilterDTI is a Data Type Input for filtering tasks by a numeric field
 type NumericFilterDTI struct {
 	Field string `json:"field"`
-	Value uint8  `json:"value"`
+	Value int    `json:"value"`
 }

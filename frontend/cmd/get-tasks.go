@@ -33,6 +33,8 @@ while:
 		fmt.Fprintf(w, "priority\t Filter by chozen level of priority\n")
 		fmt.Fprintf(w, "deadline\t Filter by chozen deadline date\n")
 		fmt.Fprintf(w, "added\t Filter by chozen date of creation\n")
+		fmt.Fprintf(w, "ID\t Filter by chozen ID (if exists)\n")
+		fmt.Fprintf(w, "status\t Filter by chozen status\n")
 		w.Flush()
 		fmt.Print("Filter type: ")
 		_, err := fmt.Scan(&input)
@@ -44,6 +46,10 @@ while:
 				getTaskByDate("deadline")
 			case "added":
 				getTaskByDate("creation")
+			case "ID":
+				getTaskByValues("ID")
+			case "status":
+				getTaskByValues("status")
 			}
 			break while
 		}
