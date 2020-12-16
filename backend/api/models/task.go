@@ -115,17 +115,22 @@ func (task *Task) WorkOnTask(db *gorm.DB, taskID uint64) (*Task, error) {
 }
 
 func (task *Task) verifyDependencies(db *gorm.DB) error {
+	if task.Dependencies == "" {
+		return nil
+	}
 	dependencies := strings.Split(task.Dependencies, ";")
 	var blockers []string
-	for _, s := range dependencies {
-		dependID, err := strconv.ParseInt(s, 10, 64)
-		if err != nil {
-			return errors.New("Invalid dependencie Id")
-		}
-		err = db.Debug().Model(&Task{}).Where("id = ?", dependID).Where("status = ?", Done).Take(&Task{}).Error
+	if len(dependencies) > 0 {
+		for _, s := range dependencies {
+			dependID, err := strconv.ParseInt(s, 10, 64)
+			if err != nil {
+				return errors.New("Invalid dependencie Id")
+			}
+			err = db.Debug().Model(&Task{}).Where("id = ?", dependID).Where("status = ?", Done).Take(&Task{}).Error
 
-		if err != nil {
-			blockers = append(blockers, s)
+			if err != nil {
+				blockers = append(blockers, s)
+			}
 		}
 	}
 	if len(blockers) > 0 {
