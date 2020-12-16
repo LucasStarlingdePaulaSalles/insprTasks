@@ -24,6 +24,11 @@ func ChangeStatus() {
 	}
 	url := "http://localhost:8080/status/" + strconv.Itoa(ID)
 	status = getStatus()
+	if status == 3 {
+		if !closingTaskConfirm() {
+			return
+		}
+	}
 	newStatus := models.NewStatusDTO{}
 	newStatus.NewStatus = status
 	body, err := json.Marshal(newStatus)
@@ -65,4 +70,50 @@ while:
 		}
 	}
 	return statusCode
+}
+
+//CloseTask sends a requisition to close a task
+func CloseTask() {
+	var ID int
+	fmt.Print("Task ID: ")
+	_, err := fmt.Scan(&ID)
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+		return
+	}
+	url := "http://localhost:8080/status/" + strconv.Itoa(ID)
+	newStatus := models.NewStatusDTO{}
+	newStatus.NewStatus = 3
+	if !closingTaskConfirm() {
+		return
+	}
+	body, err := json.Marshal(newStatus)
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+		return
+	}
+	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+	}
+	defer req.Body.Close()
+	tasks := models.Task{}
+	json.NewDecoder(resp.Body).Decode(&tasks)
+	PrintTasks(tasks)
+}
+
+func closingTaskConfirm() bool {
+	fmt.Println("Closing a task cannot be undone!")
+	fmt.Println("Continue anyway? (yes/no)")
+	var input string
+	fmt.Scan(&input)
+	if input == "yes" || input == "y" {
+		return true
+	}
+	return false
 }

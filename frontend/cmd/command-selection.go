@@ -18,6 +18,7 @@ func Help() {
 	fmt.Println("work     |              Start working on a task")
 	fmt.Println("stop     |   Stop work on currently active task")
 	fmt.Println("status   |               Change a task's status")
+	fmt.Println("close   |                          Close a task")
 	fmt.Println()
 }
 
@@ -43,6 +44,8 @@ while:
 			StopWork()
 		case "status":
 			ChangeStatus()
+		case "close":
+			CloseTask()
 		case "exit":
 			break while
 		}
