@@ -25,12 +25,14 @@ while:
 //Selector executes a function based on its command
 func Selector(arg string) bool {
 	switch arg {
+	case "all":
+		GetAllTasks()
+	case "current":
+		GetCurrentTask()
 	case "new":
 		CreateTask()
 	case "help":
 		help()
-	case "all":
-		GetAllTasks()
 	case "work":
 		Work()
 	case "stop":
@@ -46,21 +48,22 @@ func Selector(arg string) bool {
 		return true
 	default:
 		fmt.Println("Unknown command :(")
-		fmt.Println("Use 'help' for details")
+		fmt.Println("Use 'help' for details\n")
 	}
 	return false
 }
 
 func help() {
 	fmt.Println("Command options:")
-	fmt.Println("help     |                Show this information")
-	fmt.Println("exit     |                    Close application")
-	fmt.Println("new      |                    Create a new task")
-	fmt.Println("all      |                       Show all tasks")
-	fmt.Println("work     |              Start working on a task")
-	fmt.Println("stop     |   Stop work on currently active task")
-	fmt.Println("status   |               Change a task's status")
-	fmt.Println("close    |                         Close a task")
-	fmt.Println("tasks    |       Show tasks that match a filter")
+	fmt.Println("help      |                Show this information")
+	fmt.Println("exit      |                    Close application")
+	fmt.Println("new       |                    Create a new task")
+	fmt.Println("current   |   Show task currently been worked on")
+	fmt.Println("all       |                       Show all tasks")
+	fmt.Println("work      |              Start working on a task")
+	fmt.Println("stop      |   Stop work on currently active task")
+	fmt.Println("status    |               Change a task's status")
+	fmt.Println("close     |                         Close a task")
+	fmt.Println("tasks     |       Show tasks that match a filter")
 	fmt.Println()
 }

@@ -56,6 +56,34 @@ while:
 	}
 }
 
+//GetCurrentTask querrys the backend for the tasr on 'Working' status
+func GetCurrentTask() {
+	working := 1
+	filter := models.NumericFilterDTO{}
+	filter.Field = "status"
+	filter.Value = working
+
+	body, err := json.Marshal(filter)
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+		return
+	}
+	req, err := http.NewRequest("GET", "http://localhost:8080/tasks/value", bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+	}
+	defer req.Body.Close()
+	tasks := []models.Task{}
+	json.NewDecoder(resp.Body).Decode(&tasks)
+	fmt.Println("Currently working on")
+	PrintTasks(tasks...)
+}
+
 func getTaskByDate(param string) {
 	var dateStr string
 	fmt.Printf("Date (%s) [dd/mm/yyyy]: ", param)
