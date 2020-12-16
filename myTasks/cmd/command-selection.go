@@ -48,7 +48,8 @@ func Selector(arg string) bool {
 		return true
 	default:
 		fmt.Println("Unknown command :(")
-		fmt.Println("Use 'help' for details\n")
+		fmt.Println("Use 'help' for details")
+		fmt.Println()
 	}
 	return false
 }
