@@ -11,12 +11,13 @@ func Init() {
 
 func Help() {
 	fmt.Println("Command options:")
-	fmt.Println("help   |                 Show this information")
-	fmt.Println("exit   |                     Close application")
-	fmt.Println("new    |                     Create a new task")
-	fmt.Println("all    |                        Show all tasks")
-	fmt.Println("work   |               Start working on a task")
-	fmt.Println("stop   |    Stop work on currently active task")
+	fmt.Println("help     |                Show this information")
+	fmt.Println("exit     |                    Close application")
+	fmt.Println("new      |                    Create a new task")
+	fmt.Println("all      |                       Show all tasks")
+	fmt.Println("work     |              Start working on a task")
+	fmt.Println("stop     |   Stop work on currently active task")
+	fmt.Println("status   |               Change a task's status")
 	fmt.Println()
 }
 
@@ -40,6 +41,8 @@ while:
 			Work()
 		case "stop":
 			StopWork()
+		case "status":
+			ChangeStatus()
 		case "exit":
 			break while
 		}
