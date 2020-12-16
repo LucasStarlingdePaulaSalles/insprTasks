@@ -5,7 +5,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/frontend/models"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/myTasks/models"
 )
 
 //PrintTasks prints a task or list of tasks on standard table format

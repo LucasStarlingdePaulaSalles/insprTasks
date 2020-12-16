@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/frontend/cmd"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/myTasks/cmd"
 )
 
 func main() {

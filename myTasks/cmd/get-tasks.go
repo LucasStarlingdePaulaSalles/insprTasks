@@ -9,7 +9,7 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/frontend/models"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/myTasks/models"
 )
 
 func GetAllTasks() {

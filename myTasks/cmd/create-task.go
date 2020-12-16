@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/frontend/models"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/myTasks/models"
 )
 
 //CreateTask receives user inputs for creating a task

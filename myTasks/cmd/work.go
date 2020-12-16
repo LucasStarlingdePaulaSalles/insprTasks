@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/frontend/models"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/myTasks/models"
 )
 
 func Work() {

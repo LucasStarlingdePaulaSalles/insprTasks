@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"text/tabwriter"
 
-	"github.com/LucasStarlingdePaulaSalles/insprTasks/frontend/models"
+	"github.com/LucasStarlingdePaulaSalles/insprTasks/myTasks/models"
 )
 
 //ChangeStatus sends a requisition to change a task's status
