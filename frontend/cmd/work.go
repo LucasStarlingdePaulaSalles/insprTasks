@@ -13,7 +13,11 @@ import (
 func Work() {
 	var ID int
 	fmt.Print("Task ID: ")
-	fmt.Scan(&ID)
+	_, err := fmt.Scan(&ID)
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+		return
+	}
 	url := "http://localhost:8080/work/" + strconv.Itoa(ID)
 	bites := []byte(`{}`)
 	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(bites))
