@@ -30,3 +30,22 @@ func Work() {
 	json.NewDecoder(resp.Body).Decode(&tasks)
 	PrintTasks(tasks)
 }
+
+func StopWork() {
+	url := "http://localhost:8080/stop"
+	bites := []byte(`{}`)
+	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(bites))
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Erro: %s \n", err)
+	}
+	defer req.Body.Close()
+	tasks := models.Task{}
+	json.NewDecoder(resp.Body).Decode(&tasks)
+	fmt.Println("Stopped work:")
+	PrintTasks(tasks)
+}
